@@ -38,8 +38,17 @@ namespace CLRorBot.Gate
         {
 
             marketlist = await gateio.api.API.GetMarketListAsync();
-            marketlist = marketlist.Where(S => S.CurrB == "USDT").Where(S => S.Trend == "up").OrderByDescending(S => S.RatePercent).ToList();
-      
+            marketlist = marketlist.Where(S => S.CurrB == "USDT").Where(S => S.Trend == "up").OrderByDescending(S => S.RatePercent).ThenBy(S=>S.VolB).ToList();
+
+            var dellist = marketlist.ToList();
+            foreach (var item in dellist)
+            {
+                if (item.VolA < 100)
+                {
+                    marketlist.Remove(item);
+                }
+
+            }
 
 
             DataTable dt = new DataTable();
@@ -73,28 +82,45 @@ namespace CLRorBot.Gate
             DataTable dt = new DataTable();
             dt = ListToDatatableHelper.DicToTable(user.Available);
 
-            this.dataGridView2.DataSource = dt;
+            this.dataGridView1.DataSource = dt;
         }
 
         private async void btn_sellAll_Click(object sender, EventArgs e)
         {
+            this.btn_sellAll.Enabled = false;
+
             await SellAll();
+
+            this.btn_sellAll.Enabled = true;
+            await QueryOrder();
         }
 
         private async void btn_buyAll_Click(object sender, EventArgs e)
         {
+
+            this.btn_buy.Enabled = false;
+
             await BuyAll();
+
+
+            this.btn_buy.Enabled = true;
+
+            await QueryOrder();
         }
 
 
         private async void btn_clearorder_Click(object sender, EventArgs e)
         {
+            this.btn_clearorder.Enabled = false;
             await CancelAllOrder();
+            this.btn_clearorder.Enabled = true;
         }
 
         private void btn_checkcoin_Click(object sender, EventArgs e)
         {
-            this.dataGridView2.DataSource = CheckOrder();
+            btn_checkcoin.Enabled = false;
+            this.dataGridView1.DataSource = CheckOrder();
+            btn_checkcoin.Enabled = true;
         }
 
 
@@ -128,6 +154,8 @@ namespace CLRorBot.Gate
                     orderReqSell.CurrencyPair = item.Key + "_usdt";
 
                     await gateio.api.API.SellAsync(orderReqSell);
+
+
 
                     DeleteDB(null);
                 }
@@ -211,6 +239,10 @@ namespace CLRorBot.Gate
         }
 
       
+        /// <summary>
+        /// 查看数据库持有币种
+        /// </summary>
+        /// <returns></returns>
         private DataTable CheckOrder()
         {
             string sql = @"select * from torder_info where status=0";
@@ -296,7 +328,7 @@ namespace CLRorBot.Gate
             }
             DataTable dt = CheckOrder();
 
-            this.dataGridView2.DataSource = dt;
+            this.dataGridView1.DataSource = dt;
         }
 
         private void btn_stopmonitor_Click(object sender, EventArgs e)
@@ -306,12 +338,24 @@ namespace CLRorBot.Gate
 
         private async void btn_queryorder_Click(object sender, EventArgs e)
         {
+
+            this.btn_queryorder.Enabled = false;
+            await QueryOrder();
+
+            this.btn_queryorder.Enabled = true;
+        }
+
+        /// <summary>
+        /// 查看当前挂单信息
+        /// </summary>
+        /// <returns></returns>
+        private async Task QueryOrder()
+        {
             var orderlist = await gateio.api.API.OpenOrdersAsync();
 
             DataTable dt = ListToDatatableHelper.ToDataTable(orderlist);
 
             this.dataGridView1.DataSource = dt;
-
         }
     }
 }

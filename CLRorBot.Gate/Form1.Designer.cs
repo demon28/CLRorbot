@@ -32,7 +32,6 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.label1 = new System.Windows.Forms.Label();
-            this.dataGridView2 = new System.Windows.Forms.DataGridView();
             this.btn_top15 = new System.Windows.Forms.Button();
             this.btn_user = new System.Windows.Forms.Button();
             this.btn_sellAll = new System.Windows.Forms.Button();
@@ -49,11 +48,15 @@
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView2)).BeginInit();
             this.SuspendLayout();
             // 
             // dataGridView1
             // 
+            this.dataGridView1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.dataGridView1.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dataGridView1.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
             this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridView1.Location = new System.Drawing.Point(21, 39);
             this.dataGridView1.Name = "dataGridView1";
@@ -64,23 +67,15 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(25, 16);
+            this.label1.Location = new System.Drawing.Point(24, 16);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(77, 12);
+            this.label1.Size = new System.Drawing.Size(65, 12);
             this.label1.TabIndex = 1;
-            this.label1.Text = "涨幅排行榜：";
-            // 
-            // dataGridView2
-            // 
-            this.dataGridView2.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridView2.Location = new System.Drawing.Point(21, 401);
-            this.dataGridView2.Name = "dataGridView2";
-            this.dataGridView2.RowTemplate.Height = 23;
-            this.dataGridView2.Size = new System.Drawing.Size(898, 274);
-            this.dataGridView2.TabIndex = 2;
+            this.label1.Text = "数据窗口：";
             // 
             // btn_top15
             // 
+            this.btn_top15.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.btn_top15.Location = new System.Drawing.Point(27, 313);
             this.btn_top15.Name = "btn_top15";
             this.btn_top15.Size = new System.Drawing.Size(75, 23);
@@ -91,6 +86,7 @@
             // 
             // btn_user
             // 
+            this.btn_user.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.btn_user.Location = new System.Drawing.Point(27, 362);
             this.btn_user.Name = "btn_user";
             this.btn_user.Size = new System.Drawing.Size(75, 23);
@@ -101,6 +97,7 @@
             // 
             // btn_sellAll
             // 
+            this.btn_sellAll.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.btn_sellAll.Location = new System.Drawing.Point(243, 362);
             this.btn_sellAll.Name = "btn_sellAll";
             this.btn_sellAll.Size = new System.Drawing.Size(75, 23);
@@ -111,6 +108,7 @@
             // 
             // btn_buy
             // 
+            this.btn_buy.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.btn_buy.Location = new System.Drawing.Point(131, 362);
             this.btn_buy.Name = "btn_buy";
             this.btn_buy.Size = new System.Drawing.Size(75, 23);
@@ -121,6 +119,7 @@
             // 
             // btn_clearorder
             // 
+            this.btn_clearorder.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.btn_clearorder.Location = new System.Drawing.Point(243, 314);
             this.btn_clearorder.Name = "btn_clearorder";
             this.btn_clearorder.Size = new System.Drawing.Size(75, 23);
@@ -131,6 +130,7 @@
             // 
             // btn_checkcoin
             // 
+            this.btn_checkcoin.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.btn_checkcoin.Location = new System.Drawing.Point(359, 362);
             this.btn_checkcoin.Name = "btn_checkcoin";
             this.btn_checkcoin.Size = new System.Drawing.Size(75, 23);
@@ -141,6 +141,7 @@
             // 
             // btn_monitor
             // 
+            this.btn_monitor.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.btn_monitor.Location = new System.Drawing.Point(471, 362);
             this.btn_monitor.Name = "btn_monitor";
             this.btn_monitor.Size = new System.Drawing.Size(75, 23);
@@ -151,6 +152,7 @@
             // 
             // btn_stopmonitor
             // 
+            this.btn_stopmonitor.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.btn_stopmonitor.Location = new System.Drawing.Point(581, 362);
             this.btn_stopmonitor.Name = "btn_stopmonitor";
             this.btn_stopmonitor.Size = new System.Drawing.Size(75, 23);
@@ -161,6 +163,7 @@
             // 
             // btn_queryorder
             // 
+            this.btn_queryorder.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.btn_queryorder.Location = new System.Drawing.Point(131, 313);
             this.btn_queryorder.Name = "btn_queryorder";
             this.btn_queryorder.Size = new System.Drawing.Size(75, 23);
@@ -171,6 +174,7 @@
             // 
             // tb_ying
             // 
+            this.tb_ying.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.tb_ying.BackColor = System.Drawing.SystemColors.Control;
             this.tb_ying.ForeColor = System.Drawing.Color.Green;
             this.tb_ying.Location = new System.Drawing.Point(780, 359);
@@ -181,6 +185,7 @@
             // 
             // tb_kui
             // 
+            this.tb_kui.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.tb_kui.BackColor = System.Drawing.SystemColors.Control;
             this.tb_kui.ForeColor = System.Drawing.Color.Red;
             this.tb_kui.Location = new System.Drawing.Point(853, 359);
@@ -191,6 +196,7 @@
             // 
             // label2
             // 
+            this.label2.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(818, 362);
             this.label2.Name = "label2";
@@ -200,6 +206,7 @@
             // 
             // label3
             // 
+            this.label3.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.label3.AutoSize = true;
             this.label3.Location = new System.Drawing.Point(854, 334);
             this.label3.Name = "label3";
@@ -209,6 +216,7 @@
             // 
             // label4
             // 
+            this.label4.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.label4.AutoSize = true;
             this.label4.Location = new System.Drawing.Point(788, 334);
             this.label4.Name = "label4";
@@ -220,7 +228,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(949, 708);
+            this.ClientSize = new System.Drawing.Size(949, 432);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
@@ -235,14 +243,12 @@
             this.Controls.Add(this.btn_sellAll);
             this.Controls.Add(this.btn_user);
             this.Controls.Add(this.btn_top15);
-            this.Controls.Add(this.dataGridView2);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.dataGridView1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Form1";
-            this.Text = "RorBot  V1.1";
+            this.Text = "RorBot  V1.2";
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView2)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -252,7 +258,6 @@
 
         private System.Windows.Forms.DataGridView dataGridView1;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.DataGridView dataGridView2;
         private System.Windows.Forms.Button btn_top15;
         private System.Windows.Forms.Button btn_user;
         private System.Windows.Forms.Button btn_sellAll;
