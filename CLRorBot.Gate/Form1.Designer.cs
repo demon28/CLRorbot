@@ -28,7 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.label1 = new System.Windows.Forms.Label();
@@ -40,13 +39,14 @@
             this.btn_checkcoin = new System.Windows.Forms.Button();
             this.btn_monitor = new System.Windows.Forms.Button();
             this.btn_stopmonitor = new System.Windows.Forms.Button();
-            this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.btn_queryorder = new System.Windows.Forms.Button();
-            this.tb_ying = new System.Windows.Forms.TextBox();
-            this.tb_kui = new System.Windows.Forms.TextBox();
+            this.tb_kuisun = new System.Windows.Forms.TextBox();
+            this.tb_yingli = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
+            this.btn_add = new System.Windows.Forms.Button();
+            this.btn_delall = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -172,33 +172,33 @@
             this.btn_queryorder.UseVisualStyleBackColor = true;
             this.btn_queryorder.Click += new System.EventHandler(this.btn_queryorder_Click);
             // 
-            // tb_ying
+            // tb_kuisun
             // 
-            this.tb_ying.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.tb_ying.BackColor = System.Drawing.SystemColors.Control;
-            this.tb_ying.ForeColor = System.Drawing.Color.Green;
-            this.tb_ying.Location = new System.Drawing.Point(780, 359);
-            this.tb_ying.Name = "tb_ying";
-            this.tb_ying.Size = new System.Drawing.Size(32, 21);
-            this.tb_ying.TabIndex = 13;
-            this.tb_ying.Text = "-2";
+            this.tb_kuisun.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            this.tb_kuisun.BackColor = System.Drawing.SystemColors.Control;
+            this.tb_kuisun.ForeColor = System.Drawing.Color.Green;
+            this.tb_kuisun.Location = new System.Drawing.Point(814, 365);
+            this.tb_kuisun.Name = "tb_kuisun";
+            this.tb_kuisun.Size = new System.Drawing.Size(32, 21);
+            this.tb_kuisun.TabIndex = 13;
+            this.tb_kuisun.Text = "-2";
             // 
-            // tb_kui
+            // tb_yingli
             // 
-            this.tb_kui.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.tb_kui.BackColor = System.Drawing.SystemColors.Control;
-            this.tb_kui.ForeColor = System.Drawing.Color.Red;
-            this.tb_kui.Location = new System.Drawing.Point(853, 359);
-            this.tb_kui.Name = "tb_kui";
-            this.tb_kui.Size = new System.Drawing.Size(30, 21);
-            this.tb_kui.TabIndex = 14;
-            this.tb_kui.Text = "5";
+            this.tb_yingli.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            this.tb_yingli.BackColor = System.Drawing.SystemColors.Control;
+            this.tb_yingli.ForeColor = System.Drawing.Color.Red;
+            this.tb_yingli.Location = new System.Drawing.Point(887, 365);
+            this.tb_yingli.Name = "tb_yingli";
+            this.tb_yingli.Size = new System.Drawing.Size(30, 21);
+            this.tb_yingli.TabIndex = 14;
+            this.tb_yingli.Text = "5";
             // 
             // label2
             // 
             this.label2.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(818, 362);
+            this.label2.Location = new System.Drawing.Point(852, 368);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(29, 12);
             this.label2.TabIndex = 15;
@@ -208,7 +208,7 @@
             // 
             this.label3.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(854, 334);
+            this.label3.Location = new System.Drawing.Point(888, 340);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(17, 12);
             this.label3.TabIndex = 16;
@@ -218,22 +218,46 @@
             // 
             this.label4.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(788, 334);
+            this.label4.Location = new System.Drawing.Point(822, 340);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(17, 12);
             this.label4.TabIndex = 17;
             this.label4.Text = "亏";
+            // 
+            // btn_add
+            // 
+            this.btn_add.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            this.btn_add.Location = new System.Drawing.Point(684, 314);
+            this.btn_add.Name = "btn_add";
+            this.btn_add.Size = new System.Drawing.Size(75, 23);
+            this.btn_add.TabIndex = 18;
+            this.btn_add.Text = "手工添加";
+            this.btn_add.UseVisualStyleBackColor = true;
+            this.btn_add.Click += new System.EventHandler(this.btn_add_Click);
+            // 
+            // btn_delall
+            // 
+            this.btn_delall.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            this.btn_delall.Location = new System.Drawing.Point(684, 362);
+            this.btn_delall.Name = "btn_delall";
+            this.btn_delall.Size = new System.Drawing.Size(75, 23);
+            this.btn_delall.TabIndex = 19;
+            this.btn_delall.Text = "清空数据库";
+            this.btn_delall.UseVisualStyleBackColor = true;
+            this.btn_delall.Click += new System.EventHandler(this.btn_delall_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(949, 432);
+            this.Controls.Add(this.btn_delall);
+            this.Controls.Add(this.btn_add);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
-            this.Controls.Add(this.tb_kui);
-            this.Controls.Add(this.tb_ying);
+            this.Controls.Add(this.tb_yingli);
+            this.Controls.Add(this.tb_kuisun);
             this.Controls.Add(this.btn_queryorder);
             this.Controls.Add(this.btn_stopmonitor);
             this.Controls.Add(this.btn_monitor);
@@ -266,13 +290,14 @@
         private System.Windows.Forms.Button btn_checkcoin;
         private System.Windows.Forms.Button btn_monitor;
         private System.Windows.Forms.Button btn_stopmonitor;
-        private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.Button btn_queryorder;
-        private System.Windows.Forms.TextBox tb_ying;
-        private System.Windows.Forms.TextBox tb_kui;
+        private System.Windows.Forms.TextBox tb_kuisun;
+        private System.Windows.Forms.TextBox tb_yingli;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Button btn_add;
+        private System.Windows.Forms.Button btn_delall;
     }
 }
 

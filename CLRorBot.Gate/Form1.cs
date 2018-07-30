@@ -7,6 +7,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Tools.Common;
@@ -21,7 +22,7 @@ namespace CLRorBot.Gate
 
         public Form1()
         {
-        
+
             InitializeComponent();
 
             gateio.api.API.SetKey(apiKey, SecretKey);
@@ -38,7 +39,7 @@ namespace CLRorBot.Gate
         {
 
             marketlist = await gateio.api.API.GetMarketListAsync();
-            marketlist = marketlist.Where(S => S.CurrB == "USDT").Where(S => S.Trend == "up").OrderByDescending(S => S.RatePercent).ThenBy(S=>S.VolB).ToList();
+            marketlist = marketlist.Where(S => S.CurrB == "USDT").Where(S => S.Trend == "up").OrderByDescending(S => S.RatePercent).ThenBy(S => S.VolB).ToList();
 
             var dellist = marketlist.ToList();
             foreach (var item in dellist)
@@ -78,7 +79,7 @@ namespace CLRorBot.Gate
 
         private async void btn_user_Click(object sender, EventArgs e)
         {
-            var user= await gateio.api.API.GetBalancesAsync();
+            var user = await gateio.api.API.GetBalancesAsync();
             DataTable dt = new DataTable();
             dt = ListToDatatableHelper.DicToTable(user.Available);
 
@@ -173,7 +174,7 @@ namespace CLRorBot.Gate
             var blancelist = await gateio.api.API.GetBalancesAsync();
             decimal usdtcount = blancelist.Available["USDT"];
 
-            if (marketlist.Count==0)
+            if (marketlist.Count == 0)
             {
                 await GetTop();
             }
@@ -190,7 +191,7 @@ namespace CLRorBot.Gate
                 decimal usdt = usdtcount / 10;    //十分之一的资金
 
                 decimal amount = decimal.Parse(Math.Floor(Convert.ToDouble(usdt / coinmodel.LowestAsk)).ToString()); //能买多少个
-                if (amount <= 0|| usdt<=1)
+                if (amount <= 0 || usdt <= 1)
                 {
                     continue;
                 }
@@ -198,10 +199,10 @@ namespace CLRorBot.Gate
                 orderReqbuy.CurrencyPair = item.CurrA.ToLower() + "_" + item.CurrB.ToLower();
                 orderReqbuy.Rate = coinmodel.LowestAsk;
 
-               string res=  await gateio.api.API.BuyAsync(orderReqbuy);
+                string res = await gateio.api.API.BuyAsync(orderReqbuy);
 
 
-                InsertDataBase(orderReqbuy,res, coinmodel.LowestAsk);
+                InsertDataBase(orderReqbuy, res);
             }
         }
 
@@ -228,17 +229,22 @@ namespace CLRorBot.Gate
 
 
 
-
-        private void InsertDataBase(OrderReq req,string res,decimal price)
+        /// <summary>
+        /// 插入数据库
+        /// </summary>
+        /// <param name="req"></param>
+        /// <param name="res"></param>
+        /// <param name="price"></param>
+        private void InsertDataBase(OrderReq req, string res)
         {
-            string sql = @"insert into  torder_info  ('cointype','count','buyrate','nowrate','amount','status','createtime','yingli','profit','remark')
-                values ('"+ req .CurrencyPair+ "','"+ req.Amount+ "','"+ price + "','0','" + req.Amount * price + "','0','"+DateTime.Now+"','0','0','"+res+"')";
+            string sql = @"insert into  torder_info  ('cointype','count','buyrate','nowrate','amount','status','yingli','profit','remark')
+                values ('" + req.CurrencyPair + "','" + req.Amount + "','" + req.Rate + "','0','" + req.Amount * req.Rate + "','0','0','0','" + res + "')";
 
             SQLiteHelper.ExecuteNonQuery(sql);
 
         }
 
-      
+
         /// <summary>
         /// 查看数据库持有币种
         /// </summary>
@@ -247,9 +253,13 @@ namespace CLRorBot.Gate
         {
             string sql = @"select * from torder_info where status=0";
 
-           return SQLiteHelper.ExecuteDataSet(sql).Tables[0];
+            return SQLiteHelper.ExecuteDataSet(sql).Tables[0];
 
         }
+        /// <summary>
+        /// 删除数据
+        /// </summary>
+        /// <param name="where"></param>
         private void DeleteDB(string where)
         {
             string sql = @"delete from torder_info where 1=1";
@@ -258,7 +268,7 @@ namespace CLRorBot.Gate
             {
                 sql += " and " + where;
             }
-        
+
 
             SQLiteHelper.ExecuteNonQuery(sql);
 
@@ -266,74 +276,115 @@ namespace CLRorBot.Gate
 
 
 
-
-
-        private void btn_monitor_Click(object sender, EventArgs e)
+        static bool falg = false;
+        object obj = new object();
+        /// <summary>
+        /// 盈亏监控
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private async void btn_monitor_Click(object sender, EventArgs e)
         {
-            this.timer1.Tick += Timer1_Tick;
-            this.timer1.Interval = 2000;
-            this.timer1.Start();
+            btn_monitor.Enabled = false;
+
+            await Tick();
+
+            btn_monitor.Enabled = true;
+        }
+
+
+        public void Method()
+        {
+            Task.Factory.StartNew(async () =>
+            {
+                await Tick();
+
+            }).ContinueWith((S) =>
+            {
+
+                Method();
+
+            });
+
 
         }
 
-        private async void Timer1_Tick(object sender, EventArgs e)
+        public async Task Tick()
         {
+
             DataTable dataTable = CheckOrder();
 
             for (int i = 0; i < dataTable.Rows.Count; i++)
             {
 
-                 string CurrencyPair = dataTable.Rows[i]["cointype"].ToString();
-                 var trendinfo= await  gateio.api.API.GetTickersAsync();
-
-                foreach (var item in trendinfo)
-                {
-                    if (item.Key.ToLower()==CurrencyPair.ToLower())
-                    {
-                        decimal nowrate = item.Value.Last;
-                        decimal buyrate =decimal.Parse( dataTable.Rows[i]["buyrate"].ToString());
-                        decimal yingli = nowrate - buyrate;
-                        decimal uplow = (yingli / buyrate);
-                        string polfit = uplow.ToString("f2") + "%";
-                        decimal count = decimal.Parse(dataTable.Rows[i]["count"].ToString());
-                        decimal amount= count * nowrate;
-            
-
-                        string sql = @"update torder_info  set nowrate='" + nowrate + "',amount='" + amount + "',yingli='" + yingli + "',profit='" + polfit + "'" +
-                                        "   where cointype='" + CurrencyPair + "'";
-
-                        SQLiteHelper.ExecuteNonQuery(sql);
-
-                        int ying = int.Parse(this.tb_ying.Text);
-                        int kui = int.Parse(this.tb_kui.Text);
+                string CurrencyPair = dataTable.Rows[i]["cointype"].ToString();
+                var trendinfo = await gateio.api.API.GetTickerAsync(CurrencyPair.Split('_')[0], CurrencyPair.Split('_')[1]);
 
 
-                        if (uplow > ying || uplow< kui)  //涨5% 或 跌2% 就抛
-                        {
-                            OrderReq req = new OrderReq();
-                            req.Amount = count;
-                            req.CurrencyPair = CurrencyPair;
-                            req.Rate = nowrate;
-
-                            await gateio.api.API.SellAsync(req);
-
-                            DeleteDB("cointype=" + CurrencyPair);
-                        }
-
-                    }
+                decimal nowrate = trendinfo.Last;
+                decimal buyrate = decimal.Parse(dataTable.Rows[i]["buyrate"].ToString());
+                decimal yingli = nowrate - buyrate;
+                decimal uplow = (yingli / buyrate);
+                string polfit = (uplow * 100).ToString("f2") + "%";
+                decimal count = decimal.Parse(dataTable.Rows[i]["count"].ToString());
+                decimal amount = count * nowrate;
 
 
-                }
+                string sql = @"update torder_info  set nowrate='" + nowrate + "',amount='" + amount + "',yingli='" + yingli + "',profit='" + polfit + "'" +
+                                "   where cointype='" + CurrencyPair + "'";
+
+                int falg = SQLiteHelper.ExecuteNonQuery(sql);
+                Console.WriteLine(falg);
+
+
+                DataTable dt = CheckOrder();
+                this.dataGridView1.DataSource = dt;
+
+                Opear(uplow, count, CurrencyPair, nowrate);
+
+
 
             }
-            DataTable dt = CheckOrder();
 
-            this.dataGridView1.DataSource = dt;
         }
+
+        /// <summary>
+        /// 盈亏操作
+        /// </summary>
+        /// <param name="uplow"></param>
+        /// <param name="count"></param>
+        /// <param name="CurrencyPair"></param>
+        /// <param name="nowrate"></param>
+        private async void Opear(decimal uplow, decimal count, string CurrencyPair, decimal nowrate)
+        {
+
+
+            int ying = 5;
+                int.TryParse(this.tb_yingli.Text,out ying);
+
+            int kui = -2;
+            int.TryParse(this.tb_kuisun.Text,out kui);
+
+            uplow = uplow * 100;
+
+            if (uplow > ying || uplow < kui)  //涨5% 或 跌2% 就抛
+            {
+                OrderReq req = new OrderReq();
+                req.Amount = count;
+                req.CurrencyPair = CurrencyPair;
+                req.Rate = nowrate;
+
+               await gateio.api.API.SellAsync(req);
+
+                DeleteDB("cointype='" + CurrencyPair+"'");
+            }
+
+        }
+
 
         private void btn_stopmonitor_Click(object sender, EventArgs e)
         {
-            this.timer1.Stop();
+
         }
 
         private async void btn_queryorder_Click(object sender, EventArgs e)
@@ -356,6 +407,17 @@ namespace CLRorBot.Gate
             DataTable dt = ListToDatatableHelper.ToDataTable(orderlist);
 
             this.dataGridView1.DataSource = dt;
+        }
+
+        private void btn_add_Click(object sender, EventArgs e)
+        {
+            Form2 form = new Form2();
+            form.Show();
+        }
+
+        private void btn_delall_Click(object sender, EventArgs e)
+        {
+            DeleteDB(null);
         }
     }
 }
