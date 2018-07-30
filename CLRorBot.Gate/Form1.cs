@@ -294,6 +294,9 @@ namespace CLRorBot.Gate
                 }
 
             }
+            DataTable dt = CheckOrder();
+
+            this.dataGridView2.DataSource = dt;
         }
 
         private void btn_stopmonitor_Click(object sender, EventArgs e)
