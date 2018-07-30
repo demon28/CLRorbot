@@ -137,8 +137,8 @@ namespace gateio.api
         /// <returns>返回所有系统支持的交易市场的详细行情和币种信息，包括币种名，市值，供应量，最新价格，涨跌趋势，价格曲线等。</returns>
         public static async Task<List<MarketInfo>> GetMarketListAsync()
         {
-           // try
-           // {
+            try
+            {
                 var requestUrl = QUERY_URL + MARKET_LIST_URL;
                 var json = await GetReqAsync(requestUrl);
 
@@ -155,15 +155,15 @@ namespace gateio.api
 
                 return list;
 
-            //}
-            //catch (JsonSerializationException)
-            //{
-            //    throw new BotException("1002");
-            //}
-            //catch (Exception ex)
-            //{
-            //    throw new BotException("1000", ex.Message);
-            //}
+            }
+            catch (JsonSerializationException)
+            {
+                throw new BotException("1002");
+            }
+            catch (Exception ex)
+            {
+                throw new BotException("1000", ex.Message);
+            }
         }
 
         /// <summary>

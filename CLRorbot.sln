@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27428.2002
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CLRorbot", "CLRorbot\CLRorbot.csproj", "{0BE369BC-4E42-4687-A190-86FA08D941B1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CLRorBot.API", "CLRorBot.API\CLRorBot.API.csproj", "{A3207D0E-EA4F-4219-807B-9AA5499DCCA3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CLRorBot.Gate", "CLRorBot.Gate\CLRorBot.Gate.csproj", "{47040C56-45CF-4F5B-B458-9D34C4DE8DE4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +13,14 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{0BE369BC-4E42-4687-A190-86FA08D941B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0BE369BC-4E42-4687-A190-86FA08D941B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0BE369BC-4E42-4687-A190-86FA08D941B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0BE369BC-4E42-4687-A190-86FA08D941B1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3207D0E-EA4F-4219-807B-9AA5499DCCA3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3207D0E-EA4F-4219-807B-9AA5499DCCA3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3207D0E-EA4F-4219-807B-9AA5499DCCA3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3207D0E-EA4F-4219-807B-9AA5499DCCA3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{47040C56-45CF-4F5B-B458-9D34C4DE8DE4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{47040C56-45CF-4F5B-B458-9D34C4DE8DE4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{47040C56-45CF-4F5B-B458-9D34C4DE8DE4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{47040C56-45CF-4F5B-B458-9D34C4DE8DE4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

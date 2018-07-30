@@ -98,7 +98,7 @@ namespace CLRorbot.Common
             HUOBI_HOST_URL = "https://api.gateio.io";
             string url = "/api2/1/private/balances";
 
-            client.AddDefaultHeader("KEY", "2D359374-04C8-4A74-8019-04A7455146F8");
+            client.AddDefaultHeader("KEY", ApiKey);
 
             var sign = GetSign(null);
           
@@ -107,6 +107,23 @@ namespace CLRorbot.Common
             return SendRequestContentPost<GatebalancesModel>(url);
 
         }
+
+
+        public GateBuyOrderModel Buy(OrderReq model) {
+
+            HUOBI_HOST_URL = "https://api.gateio.io";
+            string url = "/api2/1/private/buy";
+            client.AddDefaultHeader("KEY", ApiKey);
+            var sign = GetSign(null);
+
+
+
+            client.AddDefaultHeader("SIGN", sign);
+            return   SendRequestContentPost<GateBuyOrderModel>(url); ;
+        }
+
+
+
 
 
 

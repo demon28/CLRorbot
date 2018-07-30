@@ -70,7 +70,7 @@
             // btn_star
             // 
             this.btn_star.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btn_star.Location = new System.Drawing.Point(1214, 12);
+            this.btn_star.Location = new System.Drawing.Point(970, 8);
             this.btn_star.Name = "btn_star";
             this.btn_star.Size = new System.Drawing.Size(75, 23);
             this.btn_star.TabIndex = 0;
@@ -81,7 +81,7 @@
             // btn_end
             // 
             this.btn_end.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btn_end.Location = new System.Drawing.Point(1214, 37);
+            this.btn_end.Location = new System.Drawing.Point(970, 36);
             this.btn_end.Name = "btn_end";
             this.btn_end.Size = new System.Drawing.Size(75, 23);
             this.btn_end.TabIndex = 1;
@@ -200,12 +200,15 @@
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.button3);
             this.panel1.Controls.Add(this.tb_jiankong);
             this.panel1.Controls.Add(this.tb_zhongzhi);
             this.panel1.Controls.Add(this.label12);
             this.panel1.Controls.Add(this.label11);
             this.panel1.Controls.Add(this.label10);
             this.panel1.Controls.Add(this.label9);
+            this.panel1.Controls.Add(this.btn_star);
+            this.panel1.Controls.Add(this.btn_end);
             this.panel1.Location = new System.Drawing.Point(9, 5);
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(1297, 70);
@@ -275,7 +278,6 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panel3.Controls.Add(this.button4);
-            this.panel3.Controls.Add(this.button3);
             this.panel3.Controls.Add(this.button1);
             this.panel3.Controls.Add(this.label8);
             this.panel3.Controls.Add(this.dataGridView1);
@@ -358,24 +360,24 @@
             // button3
             // 
             this.button3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button3.Location = new System.Drawing.Point(831, 461);
+            this.button3.Location = new System.Drawing.Point(1206, 11);
             this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(122, 31);
-            this.button3.TabIndex = 18;
-            this.button3.Text = "Top15";
+            this.button3.Size = new System.Drawing.Size(75, 23);
+            this.button3.TabIndex = 6;
+            this.button3.Text = "轮 询";
             this.button3.UseVisualStyleBackColor = true;
             this.button3.Click += new System.EventHandler(this.button3_Click);
             // 
             // button4
             // 
             this.button4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button4.Location = new System.Drawing.Point(983, 461);
+            this.button4.Location = new System.Drawing.Point(979, 461);
             this.button4.Name = "button4";
             this.button4.Size = new System.Drawing.Size(122, 31);
-            this.button4.TabIndex = 19;
+            this.button4.TabIndex = 18;
             this.button4.Text = "Top15";
             this.button4.UseVisualStyleBackColor = true;
-            this.button4.Click += new System.EventHandler(this.button4_Click);
+            this.button4.Click += new System.EventHandler(this.button4_ClickAsync);
             // 
             // Form1
             // 
@@ -394,8 +396,6 @@
             this.Controls.Add(this.label2);
             this.Controls.Add(this.tb_zhiyingbi);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.btn_end);
-            this.Controls.Add(this.btn_star);
             this.Controls.Add(this.panel1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Form1";
@@ -445,8 +445,8 @@
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.Button button4;
         private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.Button button4;
     }
 }
 

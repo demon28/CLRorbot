@@ -22,8 +22,8 @@ namespace CLRorbot
         GateAPIFacade gate;
         static List<Datum> top10;
         StringBuilder builder = new StringBuilder();
+        DataTable table = new DataTable();
 
-       
         public Form1()
         {
             InitializeComponent();
@@ -32,29 +32,23 @@ namespace CLRorbot
         }
 
 
-
         private void Form1_Load(object sender, EventArgs e)
         {
             this.tb_apikey.Text = apiKey;
             this.tb_seckey.Text = SecretKey;
             gateio.api.API.SetKey(apiKey, SecretKey);
 
-           // GetBlanceAsync();
+            GetBlanceAsync();
         }
 
 
 
         private async void btn_star_Click(object sender, EventArgs e)
         {
-            this.timer1.Interval = 1000 * 60 * 60 * int.Parse(this.tb_zhongzhi.Text); //每8小时执行一次 清空所有盘面,不论涨跌
-            this.timer1.Start();
-
-
-            this.timer2.Interval = 1000 * int.Parse(this.tb_jiankong.Text); //每分钟监控，达到盈亏就操作
-            this.timer2.Start();
+            //this.timer1.Interval = 1000 * 60 * 60 * int.Parse(this.tb_zhongzhi.Text); //每8小时执行一次 清空所有盘面,不论涨跌
+            //this.timer1.Start();
 
             await ClearDealAsync();
-
 
 
         }
@@ -111,7 +105,7 @@ namespace CLRorbot
 
 
 
-        private void timer2_Tick(object sender, EventArgs e)
+        private async void timer2_Tick(object sender, EventArgs e)
         {
 
             TakeDeal();
@@ -167,9 +161,13 @@ namespace CLRorbot
                 foreach (var item in blance.Available)
                 {
 
-
                     var model = await GetCoinPriceAsync(item.Key);
                     decimal price = model.HighestBid; //拿到买方最高价
+                    if (price*item.Value<1)
+                    {
+                        continue;
+                    }
+
 
                     OrderReq orderReqSell = new OrderReq();
                     orderReqSell.Amount = item.Value;
@@ -202,10 +200,13 @@ namespace CLRorbot
 
                 var coinmodel = await GetCoinPriceAsync(item.curr_a);
 
-                decimal usdt = usdtcount / 10;
+                decimal usdt = usdtcount / 10;    //十分之一的资金
 
-                decimal amount = decimal.Parse(Math.Floor(Convert.ToDouble(usdt / coinmodel.LowestAsk)).ToString());
-
+                decimal amount = decimal.Parse(Math.Floor(Convert.ToDouble(usdt / coinmodel.LowestAsk)).ToString()); //能买多少个
+                if (amount<=0)
+                {
+                    continue;
+                }
                 orderReqbuy.Amount = amount;
                 orderReqbuy.CurrencyPair = item.curr_a.ToLower() + "_" + item.curr_b.ToLower();
                 orderReqbuy.Rate = coinmodel.LowestAsk;
@@ -220,42 +221,46 @@ namespace CLRorbot
 
 
 
-
-
-
-
-
-
-
-
-
-
-
         /// <summary>
         /// 每分钟查看持有币种，计算涨跌值，然后抛掉
         /// </summary>
         private void TakeDeal()
         {
-            //step1：查询挂单信息，超过1分钟没有成交的扯淡。
-            //step2:查询持币信息，达到盈亏值就抛掉
-            //step3:查询盘面是否继续持币，没有就预留通知接口
+            GetUpLow();
+
+
         }
 
+        private async void GetUpLow()
+        {
+            var marketlist = await gateio.api.API.GetMarketListAsync();
+            marketlist = marketlist.Where(S => S.CurrB == "USDT").ToList();
+
+            for (int i = 0; i <table.Rows.Count; i++)
+            {
+                foreach (var item in marketlist)
+                {
+                    if (table.Rows[i]["CoinType"].ToString()==item.CurrA)
+                    {
+
+                        decimal nowamount= decimal.Parse(table.Rows[i]["Count"].ToString()) * item.Rate;
+                        decimal yingli = nowamount - decimal.Parse(table.Rows[i]["Amount"].ToString());
+                        decimal uplow= yingli/ decimal.Parse(table.Rows[i]["Amount"].ToString());
+
+                        table.Rows[i]["NowAmount"] = nowamount;
+                        table.Rows[i]["Yingli"] = yingli;
+                        table.Rows[i]["Up_Low"] = uplow.ToString("f2")+"%";
+
+                    }
 
 
+                }
 
+            }
 
+            this.dataGridView1.DataSource = table;
 
-
-
-
-
-
-
-
-
-
-
+        }
 
 
 
@@ -281,15 +286,15 @@ namespace CLRorbot
         public async Task BuyAsync(OrderReq orderReq)
         {
 
-            //string sql = @"insert into torder_info('jiaoyidui','buyprice','sellprice','yinkuibi','amount','status') 
-            //            values('"+ orderReq .CurrencyPair+ "','"+ orderReq.Rate+ "','0','0','"+orderReq.Amount+"','0')  ;";
-
-            //SQLiteHelper.ExecuteNonQuery(sql);
+   
 
 
             alert(orderReq.CurrencyPair + "======Buy:" + orderReq.Rate + "=====amount:" + orderReq.Amount);
 
             var res = await gateio.api.API.BuyAsync(orderReq);
+
+     
+
 
         }
         /// <summary>
@@ -323,6 +328,7 @@ namespace CLRorbot
             //Form2 form = new Form2();
             //form.Show();
         }
+
         private void button1_Click(object sender, EventArgs e)
         {
 
@@ -347,14 +353,82 @@ namespace CLRorbot
             this.textBox1.Text = builder.ToString();
         }
 
-        private async void button3_Click(object sender, EventArgs e)
+        private void button3_Click(object sender, EventArgs e)
         {
-           alert( gate.GetBlance().ToString());
+            this.timer2.Interval = 1000 * int.Parse(this.tb_jiankong.Text); //每分钟监控，达到盈亏就操作
+            this.timer2.Start();
+
+            BasePrice();
         }
 
-        private async void button4_Click(object sender, EventArgs e)
+
+
+
+
+
+        private async void BasePrice()
         {
-          
+            //获取24小时成功信息
+
+            var blance = await gateio.api.API.GetBalancesAsync();
+            blance.Available.Remove("USDT");
+
+            var marketlist = await gateio.api.API.GetMarketListAsync();
+            marketlist = marketlist.Where(S => S.CurrB == "USDT").ToList();
+
+           
+            table.Columns.Add("CoinType", Type.GetType("System.String"));
+            table.Columns.Add("Count", Type.GetType("System.String"));
+            table.Columns.Add("Amount", Type.GetType("System.String"));
+            table.Columns.Add("Yingli", Type.GetType("System.String"));
+            table.Columns.Add("NowAmount", Type.GetType("System.String"));
+            table.Columns.Add("Up_Low", Type.GetType("System.String"));
+
+            foreach (var item in blance.Available)
+            {
+                
+                
+                foreach (var market in marketlist)
+                {
+
+
+                    if (market.CurrA==item.Key)
+                    {
+                        DataRow rows = table.NewRow();
+                        rows["CoinType"] = market.CurrA;
+                        rows["Count"] = item.Value;
+                        rows["Amount"] = item.Value* market.Rate;
+                        rows["Yingli"] = "0";
+                        rows["NowAmount"] = item.Value * market.Rate;
+                        rows["Up_Low"] = "0%";
+
+                        table.Rows.Add(rows);
+                    }
+                   
+                }
+            }
+            this.dataGridView1.DataSource = table;
+
+        }
+
+        private async void button4_ClickAsync(object sender, EventArgs e)
+        {
+            //string sql = @"insert into torder_info('jiaoyidui','buyprice','sellprice','yinkuibi','amount','status') 
+            //            values('" + orderReq.CurrencyPair + "','" + orderReq.Rate + "','0','0','" + orderReq.Amount + "','0')  ;";
+            //SQLiteHelper.ExecuteNonQuery(sql);
+
+
+            //string sql = @"insert into torder_info ('jiaoyidui','buyprice','sellprice','yinkuibi','amount','status') 
+            //            values ('btc_usdt','80','0','0','70','0')  ;";
+            //SQLiteHelper.ExecuteNonQuery(sql);
+
+            MyTradeHistoryReq req = new MyTradeHistoryReq();
+            req.CurrencyPair = "GLC_USDT";
+            req.OrderNo = "";
+            var res = await gateio.api.API.MyTradeHistoryAsync(req);
+
+
+            alert(res[0].Pair);
         }
     }
 }
