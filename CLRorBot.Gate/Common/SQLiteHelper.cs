@@ -20,6 +20,11 @@ namespace Tools.Common
         private SQLiteHelper()
         {
         }
+
+        public static SQLiteHelper Instance
+        {
+            get { return new SQLiteHelper(); }
+        }
         /// <summary>
         /// 连接字符串
         /// </summary>
@@ -29,24 +34,24 @@ namespace Tools.Common
             {
                 ////(AppSettings节点下的"SQLiteConnectionString")
                 string text = ConfigurationManager.AppSettings["SQLiteConnectionString"];
-                
+
 
 
                 return text;
             }
         }
-        private static SQLiteConnection _Conn = null;
+        private SQLiteConnection _Conn = null;
         /// <summary>
         /// 连接对象
         /// </summary>
-        public static SQLiteConnection Conn
+        public SQLiteConnection Conn
         {
             get
             {
                 if (_Conn == null) _Conn = new SQLiteConnection(ConnectionString);
-                return SQLiteHelper._Conn;
+                return _Conn;
             }
-            set { SQLiteHelper._Conn = value; }
+            set { _Conn = value; }
         }
 
 
@@ -58,7 +63,7 @@ namespace Tools.Common
         /// <param name="commandText">语句</param>
         /// <param name="commandParameters">语句参数.</param>
         /// <returns>SQLite Command</returns>
-        public static SQLiteCommand CreateCommand(string commandText, params SQLiteParameter[] commandParameters)
+        public SQLiteCommand CreateCommand(string commandText, params SQLiteParameter[] commandParameters)
         {
             SQLiteCommand cmd = new SQLiteCommand(commandText, Conn);
             if (commandParameters.Length > 0)
@@ -79,7 +84,7 @@ namespace Tools.Common
         /// <param name="parameterType">参数类型</param>
         /// <param name="parameterValue">参数值</param>
         /// <returns>返回创建的参数</returns>
-        public static SQLiteParameter CreateParameter(string parameterName, System.Data.DbType parameterType, object parameterValue)
+        public SQLiteParameter CreateParameter(string parameterName, System.Data.DbType parameterType, object parameterValue)
         {
             SQLiteParameter parameter = new SQLiteParameter();
             parameter.DbType = parameterType;
@@ -97,12 +102,12 @@ namespace Tools.Common
         /// <param name="commandText">查询语句.</param>
         /// <param name="paramList">object参数列表.</param>
         /// <returns></returns>
-        public static DataSet ExecuteDataSet(string commandText, params object[] paramList)
+        public DataSet ExecuteDataSet(string commandText, params object[] paramList)
         {
 
             SQLiteCommand cmd = Conn.CreateCommand();
             cmd.CommandText = commandText;
-            if (paramList != null)
+            if (paramList != null && paramList.Length > 0)
             {
                 AttachParameters(cmd, commandText, paramList);
             }
@@ -124,7 +129,7 @@ namespace Tools.Common
         /// </summary>
         /// <param name="cmd">SQLiteCommand对象</param>
         /// <returns>返回数据集</returns>
-        public static DataSet ExecuteDataSet(SQLiteCommand cmd)
+        public DataSet ExecuteDataSet(SQLiteCommand cmd)
         {
             if (cmd.Connection.State == ConnectionState.Closed)
                 cmd.Connection.Open();
@@ -147,7 +152,7 @@ namespace Tools.Common
         /// <param name="commandParameters">命令的参数列表.</param>
         /// <returns>DataSet</returns>
         /// <remarks>必须手动执行关闭连接transaction.connection.Close</remarks>
-        public static DataSet ExecuteDataSet(SQLiteTransaction transaction, string commandText, params SQLiteParameter[] commandParameters)
+        public DataSet ExecuteDataSet(SQLiteTransaction transaction, string commandText, params SQLiteParameter[] commandParameters)
         {
             if (transaction == null) throw new ArgumentNullException("transaction");
             if (transaction != null && transaction.Connection == null) throw new ArgumentException("The transaction was rolled back or committed, please provide an open transaction.", "transaction");
@@ -173,7 +178,7 @@ namespace Tools.Common
         /// <param name="commandParameters">命令参数列表</param>
         /// <returns>返回数据集</returns>
         /// <remarks>必须手动执行关闭连接transaction.connection.Close</remarks>
-        public static DataSet ExecuteDataSet(SQLiteTransaction transaction, string commandText, object[] commandParameters)
+        public DataSet ExecuteDataSet(SQLiteTransaction transaction, string commandText, object[] commandParameters)
         {
 
             if (transaction == null) throw new ArgumentNullException("transaction");
@@ -198,7 +203,7 @@ namespace Tools.Common
         /// <param name="updateCommand">update语句</param>
         /// <param name="dataSet">要更新的DataSet</param>
         /// <param name="tableName">数据集中要更新的table名</param>
-        public static void UpdateDataset(SQLiteCommand insertCommand, SQLiteCommand deleteCommand, SQLiteCommand updateCommand, DataSet dataSet, string tableName)
+        public void UpdateDataset(SQLiteCommand insertCommand, SQLiteCommand deleteCommand, SQLiteCommand updateCommand, DataSet dataSet, string tableName)
         {
             if (insertCommand == null) throw new ArgumentNullException("insertCommand");
             if (deleteCommand == null) throw new ArgumentNullException("deleteCommand");
@@ -230,7 +235,7 @@ namespace Tools.Common
         /// <param name="commandText">含有类似@colume参数的sql语句</param>
         /// <param name="paramList">语句参数列表</param>
         /// <returns>IDataReader</returns>
-        public static IDataReader ExecuteReader(SQLiteCommand cmd, string commandText, object[] paramList)
+        public IDataReader ExecuteReader(SQLiteCommand cmd, string commandText, object[] paramList)
         {
             if (cmd.Connection == null)
                 throw new ArgumentException("没有为命令指定活动的连接.", "cmd");
@@ -251,7 +256,7 @@ namespace Tools.Common
         /// <param name="commandText">语句</param>
         /// <param name="paramList">参数</param>
         /// <returns></returns>
-        public static int ExecuteNonQuery(string commandText, params object[] paramList)
+        public int ExecuteNonQuery(string commandText, params object[] paramList)
         {
 
             SQLiteCommand cmd = Conn.CreateCommand();
@@ -296,7 +301,7 @@ namespace Tools.Common
         ///trans.Connection.Close();//关闭事务连接
         ///transaction.Dispose();//释放事务对象
         /// </remarks>
-        public static int ExecuteNonQuery(SQLiteTransaction transaction, string commandText, params object[] paramList)
+        public int ExecuteNonQuery(SQLiteTransaction transaction, string commandText, params object[] paramList)
         {
             if (transaction == null) throw new ArgumentNullException("transaction is null");
             if (transaction != null && transaction.Connection == null) throw new ArgumentException("The transaction was rolled back or committed,please provide an open transaction.", "transaction");
@@ -319,7 +324,7 @@ namespace Tools.Common
         /// </summary>
         /// <param name="cmd">创建好的命令.</param>
         /// <returns></returns>
-        public static int ExecuteNonQuery(IDbCommand cmd)
+        public int ExecuteNonQuery(IDbCommand cmd)
         {
             if (cmd.Connection.State == ConnectionState.Closed)
                 cmd.Connection.Open();
@@ -337,7 +342,7 @@ namespace Tools.Common
         /// <param name="commandText">语句s</param>
         /// <param name="paramList">参数</param>
         /// <returns></returns>
-        public static object ExecuteScalar(string commandText, params object[] paramList)
+        public object ExecuteScalar(string commandText, params object[] paramList)
         {
             SQLiteConnection cn = new SQLiteConnection(ConnectionString);
             SQLiteCommand cmd = cn.CreateCommand();
@@ -358,7 +363,7 @@ namespace Tools.Common
         /// </summary>
         /// <param name="command">语句</param>
         /// <returns>返回XmlTextReader对象</returns>
-        public static XmlReader ExecuteXmlReader(IDbCommand command)
+        public XmlReader ExecuteXmlReader(IDbCommand command)
         { // open the connection if necessary, but make sure we 
             // know to close it when we�re done.
             if (command.Connection.State != ConnectionState.Open)
@@ -388,7 +393,7 @@ namespace Tools.Common
         /// <param name="paramList">object参数列表</param>
         /// <returns>返回SQLiteParameterCollection参数列表</returns>
         /// <remarks>Status experimental. Regex appears to be handling most issues. Note that parameter object array must be in same ///order as parameter names appear in SQL statement.</remarks>
-        private static SQLiteParameterCollection AttachParameters(SQLiteCommand cmd, string commandText, params object[] paramList)
+        private SQLiteParameterCollection AttachParameters(SQLiteCommand cmd, string commandText, params object[] paramList)
         {
             if (paramList == null || paramList.Length == 0) return null;
 
@@ -508,7 +513,7 @@ namespace Tools.Common
         /// <param name="command">Command.</param>
         /// <param name="dataRow">Data row.</param>
         /// <returns>Integer result code</returns>
-        public static int ExecuteNonQueryTypedParams(IDbCommand command, DataRow dataRow)
+        public  int ExecuteNonQueryTypedParams(IDbCommand command, DataRow dataRow)
         {
             int retVal = 0;
 
@@ -536,7 +541,7 @@ namespace Tools.Common
         /// <param name="commandParameters">The IDataParameterCollection to be assigned values</param>
         /// <param name="dataRow">The dataRow used to hold the command's parameter values</param>
         /// <exception cref="System.InvalidOperationException">Thrown if any of the parameter names are invalid.</exception>
-        protected internal static void AssignParameterValues(IDataParameterCollection commandParameters, DataRow dataRow)
+        protected internal void AssignParameterValues(IDataParameterCollection commandParameters, DataRow dataRow)
         {
             if (commandParameters == null || dataRow == null)
             {

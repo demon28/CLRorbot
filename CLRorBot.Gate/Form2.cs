@@ -35,7 +35,7 @@ namespace CLRorBot.Gate
             string sql = @"insert into  torder_info  ('cointype','count','buyrate','nowrate','amount','status','yingli','profit','remark')
                 values ('" + req.CurrencyPair + "','" + req.Amount + "','" + req.Rate + "','0','" + req.Amount * req.Rate + "','0','0','0','')";
 
-          int i=  SQLiteHelper.ExecuteNonQuery(sql);
+          int i=  SQLiteHelper.Instance.ExecuteNonQuery(sql);
 
             if (i>0)
             {

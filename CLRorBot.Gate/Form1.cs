@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -240,7 +241,7 @@ namespace CLRorBot.Gate
             string sql = @"insert into  torder_info  ('cointype','count','buyrate','nowrate','amount','status','yingli','profit','remark')
                 values ('" + req.CurrencyPair + "','" + req.Amount + "','" + req.Rate + "','0','" + req.Amount * req.Rate + "','0','0','0','" + res + "')";
 
-            SQLiteHelper.ExecuteNonQuery(sql);
+            SQLiteHelper.Instance.ExecuteNonQuery(sql);
 
         }
 
@@ -253,7 +254,7 @@ namespace CLRorBot.Gate
         {
             string sql = @"select * from torder_info where status=0";
 
-            return SQLiteHelper.ExecuteDataSet(sql).Tables[0];
+            return SQLiteHelper.Instance.ExecuteDataSet(sql).Tables[0];
 
         }
         /// <summary>
@@ -270,7 +271,7 @@ namespace CLRorBot.Gate
             }
 
 
-            SQLiteHelper.ExecuteNonQuery(sql);
+            SQLiteHelper.Instance.ExecuteNonQuery(sql);
 
         }
 
@@ -283,69 +284,91 @@ namespace CLRorBot.Gate
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private async void btn_monitor_Click(object sender, EventArgs e)
+        private void btn_monitor_Click(object sender, EventArgs e)
         {
             btn_monitor.Enabled = false;
-
-            await Tick();
+            Task.Factory.StartNew(() =>
+           {
+               while (true)
+               {
+                   Tick(this);
+                   System.Threading.Thread.Sleep(1000);
+               }
+           });
+            //Method();
 
             btn_monitor.Enabled = true;
         }
 
 
-        public void Method()
-        {
-            Task.Factory.StartNew(async () =>
-            {
-                await Tick();
+        //public void Method()
+        //{
+        //    Task.Factory.StartNew(async () =>
+        //    {
+        //        await Tick();
 
-            }).ContinueWith((S) =>
-            {
+        //    }).ContinueWith((S) =>
+        //    {
+        //        if (S.IsCompleted)
+        //        {
+        //            Method();
+        //        }
 
-                Method();
-
-            });
+        //    });
 
 
-        }
+        //}
 
-        public async Task Tick()
+        public void Tick(Form form)
         {
 
             DataTable dataTable = CheckOrder();
-
+            List<Task> allTask = new List<Task>();
             for (int i = 0; i < dataTable.Rows.Count; i++)
             {
+                System.IO.File.AppendAllText("d:\\clrobot.txt", $"{DateTime.Now.ToString()}\tThreadId={System.Threading.Thread.CurrentThread.ManagedThreadId},current index={i}{Environment.NewLine}");
+                DataRow row = dataTable.Rows[i];
+                allTask.Add(
+                Task.Factory.StartNew(async () =>
+                {
+                    try
+                    {
+                        await GetApiData(row);
+                        DataTable dt = CheckOrder();
+                        form.Invoke((MethodInvoker)delegate ()
+                        {
+                            this.dataGridView1.DataSource = dt;
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                    }
+                }));
 
-                string CurrencyPair = dataTable.Rows[i]["cointype"].ToString();
-                var trendinfo = await gateio.api.API.GetTickerAsync(CurrencyPair.Split('_')[0], CurrencyPair.Split('_')[1]);
-
-
-                decimal nowrate = trendinfo.Last;
-                decimal buyrate = decimal.Parse(dataTable.Rows[i]["buyrate"].ToString());
-                decimal yingli = nowrate - buyrate;
-                decimal uplow = (yingli / buyrate);
-                string polfit = (uplow * 100).ToString("f2") + "%";
-                decimal count = decimal.Parse(dataTable.Rows[i]["count"].ToString());
-                decimal amount = count * nowrate;
-
-
-                string sql = @"update torder_info  set nowrate='" + nowrate + "',amount='" + amount + "',yingli='" + yingli + "',profit='" + polfit + "'" +
-                                "   where cointype='" + CurrencyPair + "'";
-
-                int falg = SQLiteHelper.ExecuteNonQuery(sql);
-                Console.WriteLine(falg);
-
-
-                DataTable dt = CheckOrder();
-                this.dataGridView1.DataSource = dt;
-
-                Opear(uplow, count, CurrencyPair, nowrate);
-
-
-
+                // Opear(uplow, count, CurrencyPair, nowrate);
             }
+            Task.WaitAll(allTask.ToArray());
 
+        }
+
+        private static async Task GetApiData(DataRow row)
+        {
+            string CurrencyPair = row["cointype"].ToString();
+            var trendinfo = await gateio.api.API.GetTickerAsync(CurrencyPair.Split('_')[0], CurrencyPair.Split('_')[1]);
+            decimal nowrate = trendinfo.Last;
+            decimal buyrate = decimal.Parse(row["buyrate"].ToString());
+            decimal yingli = nowrate - buyrate;
+            decimal uplow = (yingli / buyrate);
+            string polfit = (uplow * 100).ToString("f2") + "%";
+            decimal count = decimal.Parse(row["count"].ToString());
+            decimal amount = count * nowrate;
+
+
+            string sql = @"update torder_info  set nowrate='" + nowrate + "',amount='" + amount + "',yingli='" + yingli + "',profit='" + polfit + "'" +
+                            "   where cointype='" + CurrencyPair + "'";
+
+            int falg = SQLiteHelper.Instance.ExecuteNonQuery(sql);
+            Console.WriteLine(falg);
         }
 
         /// <summary>
@@ -360,10 +383,10 @@ namespace CLRorBot.Gate
 
 
             int ying = 5;
-                int.TryParse(this.tb_yingli.Text,out ying);
+            int.TryParse(this.tb_yingli.Text, out ying);
 
             int kui = -2;
-            int.TryParse(this.tb_kuisun.Text,out kui);
+            int.TryParse(this.tb_kuisun.Text, out kui);
 
             uplow = uplow * 100;
 
@@ -374,9 +397,9 @@ namespace CLRorBot.Gate
                 req.CurrencyPair = CurrencyPair;
                 req.Rate = nowrate;
 
-               await gateio.api.API.SellAsync(req);
+                await gateio.api.API.SellAsync(req);
 
-                DeleteDB("cointype='" + CurrencyPair+"'");
+                DeleteDB("cointype='" + CurrencyPair + "'");
             }
 
         }
