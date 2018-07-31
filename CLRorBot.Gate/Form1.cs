@@ -1,5 +1,7 @@
 ﻿using CLRorbot.Common;
 using gateio.api.Model;
+using Quartz;
+using Quartz.Impl;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -28,7 +30,12 @@ namespace CLRorBot.Gate
 
             gateio.api.API.SetKey(apiKey, SecretKey);
 
+            isoperate = this.checkBox1.Checked;
+
         }
+
+
+
 
         private async void btn_top15_ClickAsync(object sender, EventArgs e)
         {
@@ -179,7 +186,11 @@ namespace CLRorBot.Gate
             {
                 await GetTop();
             }
-            marketlist = marketlist.Skip(2).Take(10).ToList();
+
+            int coincount = 5;
+            int.TryParse(this.tb_coincount.Text, out coincount);
+
+            marketlist = marketlist.Skip(2).Take(coincount).ToList();
 
             foreach (var item in marketlist)
             {
@@ -261,7 +272,7 @@ namespace CLRorBot.Gate
         /// 删除数据
         /// </summary>
         /// <param name="where"></param>
-        private void DeleteDB(string where)
+        private static void  DeleteDB(string where)
         {
             string sql = @"delete from torder_info where 1=1";
 
@@ -287,37 +298,24 @@ namespace CLRorBot.Gate
         private void btn_monitor_Click(object sender, EventArgs e)
         {
             btn_monitor.Enabled = false;
+
+            falg = true;
+
             Task.Factory.StartNew(() =>
            {
-               while (true)
+               while (falg)
                {
                    Tick(this);
                    System.Threading.Thread.Sleep(1000);
                }
            });
-            //Method();
+
 
             btn_monitor.Enabled = true;
         }
 
 
-        //public void Method()
-        //{
-        //    Task.Factory.StartNew(async () =>
-        //    {
-        //        await Tick();
-
-        //    }).ContinueWith((S) =>
-        //    {
-        //        if (S.IsCompleted)
-        //        {
-        //            Method();
-        //        }
-
-        //    });
-
-
-        //}
+      
 
         public void Tick(Form form)
         {
@@ -333,7 +331,7 @@ namespace CLRorBot.Gate
                 {
                     try
                     {
-                        await GetApiData(row);
+                        await GetApiData(row, form);
                         DataTable dt = CheckOrder();
                         form.Invoke((MethodInvoker)delegate ()
                         {
@@ -345,13 +343,20 @@ namespace CLRorBot.Gate
                     }
                 }));
 
-                // Opear(uplow, count, CurrencyPair, nowrate);
+               
+
+
             }
             Task.WaitAll(allTask.ToArray());
 
         }
 
-        private static async Task GetApiData(DataRow row)
+        /// <summary>
+        /// 异步调取API并修改数据库
+        /// </summary>
+        /// <param name="row"></param>
+        /// <returns></returns>
+        private static async Task GetApiData(DataRow row, Form form)
         {
             string CurrencyPair = row["cointype"].ToString();
             var trendinfo = await gateio.api.API.GetTickerAsync(CurrencyPair.Split('_')[0], CurrencyPair.Split('_')[1]);
@@ -367,8 +372,14 @@ namespace CLRorBot.Gate
             string sql = @"update torder_info  set nowrate='" + nowrate + "',amount='" + amount + "',yingli='" + yingli + "',profit='" + polfit + "'" +
                             "   where cointype='" + CurrencyPair + "'";
 
-            int falg = SQLiteHelper.Instance.ExecuteNonQuery(sql);
-            Console.WriteLine(falg);
+            int res = SQLiteHelper.Instance.ExecuteNonQuery(sql);
+
+            if (isoperate)
+            {
+                Opear(uplow, count, CurrencyPair, nowrate,form);
+            }
+
+
         }
 
         /// <summary>
@@ -378,15 +389,19 @@ namespace CLRorBot.Gate
         /// <param name="count"></param>
         /// <param name="CurrencyPair"></param>
         /// <param name="nowrate"></param>
-        private async void Opear(decimal uplow, decimal count, string CurrencyPair, decimal nowrate)
+        private async static void Opear(decimal uplow, decimal count, string CurrencyPair, decimal nowrate, Form form)
         {
 
 
+            TextBox strying = form.Controls.Find("tb_yingli", true)[0] as TextBox;
+            TextBox strkui = form.Controls.Find("tb_kuisun", true)[0] as TextBox;
+
+
             int ying = 5;
-            int.TryParse(this.tb_yingli.Text, out ying);
+            int.TryParse(strying.Text, out ying);
 
             int kui = -2;
-            int.TryParse(this.tb_kuisun.Text, out kui);
+            int.TryParse(strkui.Text, out kui);
 
             uplow = uplow * 100;
 
@@ -396,6 +411,11 @@ namespace CLRorBot.Gate
                 req.Amount = count;
                 req.CurrencyPair = CurrencyPair;
                 req.Rate = nowrate;
+
+                if (req.Amount* req.Rate<1)
+                {
+                    return;
+                }
 
                 await gateio.api.API.SellAsync(req);
 
@@ -407,7 +427,7 @@ namespace CLRorBot.Gate
 
         private void btn_stopmonitor_Click(object sender, EventArgs e)
         {
-
+            falg = false;
         }
 
         private async void btn_queryorder_Click(object sender, EventArgs e)
@@ -441,6 +461,110 @@ namespace CLRorBot.Gate
         private void btn_delall_Click(object sender, EventArgs e)
         {
             DeleteDB(null);
+            this.dataGridView1.DataSource = CheckOrder();
+        }
+
+        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
+
+        private async void btn_pipei_Click(object sender, EventArgs e)
+        {
+
+
+            this.btn_pipei.Enabled = false;
+            DeleteDB(null);
+            PiPei();
+            this.btn_pipei.Enabled = true;
+        }
+
+        /// <summary>
+        /// 匹配数据库
+        /// </summary>
+        private async void PiPei()
+        {
+
+            var blance = await gateio.api.API.GetBalancesAsync();
+            blance.Available.Remove("USDT");   //去除usdt
+            var blancelist = blance.Available.Where(S => S.Value > 0.01m).ToList();  //去除小余0.01的币种
+
+            foreach (var item in blancelist)
+            {
+                MyTradeHistoryReq req = new MyTradeHistoryReq();
+                req.CurrencyPair = item.Key + "_USDT";
+
+                var order = await gateio.api.API.MyTradeHistoryAsync(req);
+
+                order = order.Where(S => S.Type == "buy").ToList();  //只看买的
+
+                order = order.Where(S => S.Rate * item.Value > 1).ToList(); // 去除金额小于1usdt的币种
+
+                if (order.Count == 0)
+                {
+                    continue;
+                }
+
+                OrderReq model = new OrderReq();
+                
+                //如果只有一条直接插入
+                if (order.Count == 1)
+                {
+                    model.Amount = order[0].Amount;
+                    model.Rate = order[0].Rate;
+
+                    if (model.Amount != item.Value)
+                    {
+                        model.Amount = item.Value;
+                    }
+                    model.CurrencyPair = req.CurrencyPair;
+                    InsertDataBase(model, string.Empty);
+
+                    continue;
+                }
+
+
+
+                decimal count = order.Sum(S => S.Amount);
+
+                decimal total = order.Sum(S => S.Rate * S.Amount);
+
+
+                model.Amount = count;
+                if (model.Amount != item.Value)
+                {
+                    model.Amount = item.Value;
+                }
+                model.Rate = total / count;
+                model.CurrencyPair = req.CurrencyPair;
+
+                InsertDataBase(model, string.Empty);
+            }
+
+
+            this.dataGridView1.DataSource = CheckOrder();
+
+        }
+
+        private void btn_timer_Click(object sender, EventArgs e)
+        {
+
+
+
+        }
+
+
+        static bool isoperate = false;
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+
+            isoperate = this.checkBox1.Checked;
+
         }
     }
+
+
+
+
 }
